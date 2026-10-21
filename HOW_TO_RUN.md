@@ -30,9 +30,6 @@ If this command fails, start Docker Desktop and retry.
 
 ## 2. Open the project directory
 
-```powershell
-cd "C:\Users\SHIVSHARN\Documents\RAJ\Drishtiksha-main\Drishtiksha-main"
-```
 
 The project root contains:
 
