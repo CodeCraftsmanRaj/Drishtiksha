@@ -1,0 +1,138 @@
+# ===================================================================
+# Drishtiksha - Base Docker Compose Configuration
+# ===================================================================
+# This file defines the application services (frontend, backend, worker).
+# It is used in combination with an override file for infrastructure.
+#   - For local dev: use with 'docker-compose.local.yml'
+#   - For cloud services: use with 'docker-compose.cloud.yml'
+# -------------------------------------------------------------------
+
+services:
+    # --- FRONTEND SERVICE ---
+    frontend:
+        build:
+            context: ./Frontend
+            dockerfile: Dockerfile
+            args:
+                # Pass build-time variables from the root .env file
+                - VITE_BACKEND_URL=${VITE_BACKEND_URL:-http://localhost:3000}
+        container_name: drishtiksha-frontend
+        ports:
+            - "${FRONTEND_PORT:-5173}:80"
+        networks:
+            - drishtiksha-net
+        depends_on:
+            - backend
+        restart: unless-stopped
+
+    # --- BACKEND API SERVICE ---
+    backend:
+        build:
+            context: ./Backend
+            dockerfile: Dockerfile
+        container_name: drishtiksha-backend
+        ports:
+            - "${BACKEND_PORT:-3000}:3000"
+        volumes:
+            - storage_volume:/app/storage/media # For local storage
+            - ./Backend/logs:/app/logs
+        environment:
+            NODE_ENV: ${NODE_ENV:-production}
+            PORT: ${BACKEND_PORT:-3000}
+            API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+            ASSETS_PORT: ${ASSETS_PORT:-3001}
+            ASSETS_BASE_URL: ${ASSETS_BASE_URL:-http://localhost:3001}
+            DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-db_password}@postgres:5432/${POSTGRES_DB:-VidVigilante}?schema=public}
+            REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+            JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret}
+            JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
+            BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+            FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+            STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+            LOCAL_STORAGE_PATH: ${LOCAL_STORAGE_PATH:-/app/storage/media}
+            SERVER_URL: ${SERVER_URL:-http://host.docker.internal:8000}
+            SERVER_API_KEY: ${SERVER_API_KEY:-change-this-server-api-key}
+        networks:
+            - drishtiksha-net
+        depends_on:
+            - redis # Always depends on Redis
+        restart: unless-stopped
+        command: ["dumb-init", "--", "npm", "run", "start"] # Explicitly start the API
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+            interval: 20s
+            timeout: 10s
+            retries: 5
+            start_period: 30s
+
+    # --- BACKGROUND WORKER SERVICE ---
+    worker:
+        build:
+            context: ./Backend
+            dockerfile: Dockerfile
+        container_name: drishtiksha-worker
+        volumes:
+            - storage_volume:/app/storage/media # Shares the same storage volume
+            - ./Backend/logs:/app/logs
+        environment:
+            NODE_ENV: ${NODE_ENV:-production}
+            PORT: ${BACKEND_PORT:-3000}
+            API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+            ASSETS_PORT: ${ASSETS_PORT:-3001}
+            ASSETS_BASE_URL: ${ASSETS_BASE_URL:-http://localhost:3001}
+            DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-db_password}@postgres:5432/${POSTGRES_DB:-VidVigilante}?schema=public}
+            REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+            JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret}
+            JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1d}
+            BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-12}
+            FRONTEND_URL: ${FRONTEND_URL:-http://localhost:5173}
+            STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+            LOCAL_STORAGE_PATH: ${LOCAL_STORAGE_PATH:-/app/storage/media}
+            SERVER_URL: ${SERVER_URL:-http://host.docker.internal:8000}
+            SERVER_API_KEY: ${SERVER_API_KEY:-change-this-server-api-key}
+        networks:
+            - drishtiksha-net
+        depends_on:
+            - redis # Always depends on Redis
+        restart: unless-stopped
+        command: ["dumb-init", "--", "npm", "run", "worker"] # Override CMD to start the worker
+
+    # --- REDIS SERVICE ---
+    # Can be disabled in docker-compose.cloud.yml if using Upstash
+    redis:
+        image: redis:7-alpine
+        container_name: drishtiksha-redis
+        ports:
+            - "${REDIS_PORT:-6379}:6379"
+        volumes:
+            - redis_volume:/data
+        networks:
+            - drishtiksha-net
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # --- PRISMA STUDIO (Optional) ---
+    prisma-studio:
+        build:
+            context: ./Backend
+        container_name: drishtiksha-prisma-studio
+        ports:
+            - "${PRISMA_STUDIO_PORT:-5555}:5555"
+        networks:
+            - drishtiksha-net
+        restart: unless-stopped
+        command: npx prisma studio --hostname 0.0.0.0 --port 5555
+        profiles:
+            - studio # Only runs if you add --profile studio to the command
+
+networks:
+    drishtiksha-net:
+        driver: bridge
+
+volumes:
+    redis_volume:
+    storage_volume:

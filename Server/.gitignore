@@ -1,0 +1,47 @@
+// .gitignore
+
+# ===================================================================
+# Environment & Secrets
+# NEVER commit local environment variables or secrets.
+# ===================================================================
+.env
+.env.*
+
+# ===================================================================
+# Python Caches & Virtual Environments
+# These are generated locally and should not be tracked.
+# ===================================================================
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# ===================================================================
+# IDE & Editor Configuration
+# Keep the repository clean of user-specific editor settings.
+# ===================================================================
+.vscode/
+.idea/
+
+# ===================================================================
+# Temporary Files & Build Artifacts
+# Ignore temporary files, logs, and build outputs.
+# ===================================================================
+*.log
+*.tmp
+*.swp
+build/
+dist/
+*.egg-info/
+
+# ===================================================================
+# Test Outputs & Reports
+# ===================================================================
+.pytest_cache/
+htmlcov/
+models/*
+assets/*.mp3
+assets/*.mp4

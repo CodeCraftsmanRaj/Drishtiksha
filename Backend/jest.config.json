@@ -1,0 +1,23 @@
+{
+    "testEnvironment": "node",
+    "testTimeout": 300000,
+    "verbose": true,
+    "clearMocks": true,
+    "resetMocks": true,
+    "restoreMocks": true,
+    "transform": {},
+    "moduleNameMapper": {
+        "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "testMatch": ["<rootDir>/tests/**/*.js"],
+    "testPathIgnorePatterns": [
+        "<rootDir>/tests/fixtures/",
+        "<rootDir>/tests/setup/"
+    ],
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup/testSetup.js"],
+    "collectCoverageFrom": [
+        "src/**/*.js",
+        "!src/**/*.test.js",
+        "!src/**/index.js"
+    ]
+}

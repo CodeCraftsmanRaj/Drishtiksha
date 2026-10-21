@@ -1,0 +1,18 @@
+# ===================================================================
+# CLOUD Environment Override
+# ===================================================================
+# This file disables any local infrastructure containers not needed
+# when connecting to cloud services (e.g., Upstash for Redis).
+# Assumes DATABASE_URL and REDIS_URL are set to cloud URIs in .env
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.cloud.yml up
+# -------------------------------------------------------------------
+
+services:
+    # If your .env REDIS_URL points to Upstash, you don't need a local Redis.
+    # This section disables the 'redis' service defined in the base file.
+    redis:
+        image: alpine:latest
+        # The 'profiles' key is a trick to disable a service.
+        # By assigning it a profile that is never activated, it won't start.
+        profiles:
+            - donotstart

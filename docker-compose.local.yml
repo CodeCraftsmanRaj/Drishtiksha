@@ -1,0 +1,52 @@
+# ===================================================================
+# LOCAL Environment Override
+# ===================================================================
+# This file adds the local PostgreSQL database container.
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.local.yml up
+# -------------------------------------------------------------------
+
+services:
+    # --- LOCAL POSTGRESQL DATABASE ---
+    postgres:
+        image: postgres:15-alpine
+        container_name: drishtiksha-postgres
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB:-VidVigilante}
+            POSTGRES_USER: ${POSTGRES_USER:-postgres}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-db_password}
+        ports:
+            - "${POSTGRES_PORT:-5432}:5432"
+        volumes:
+            - postgres_volume:/var/lib/postgresql/data
+        networks:
+            - drishtiksha-net
+        restart: unless-stopped
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-VidVigilante}",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    # --- SERVICE MODIFICATIONS ---
+    # Make the backend and worker wait for the local database to be ready.
+    backend:
+        depends_on:
+            postgres:
+                condition: service_healthy
+
+    worker:
+        depends_on:
+            postgres:
+                condition: service_healthy
+
+    prisma-studio:
+        depends_on:
+            postgres:
+                condition: service_healthy
+
+volumes:
+    postgres_volume:

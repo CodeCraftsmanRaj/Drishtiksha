@@ -1,0 +1,15 @@
+node_modules
+
+database/
+
+public/media/
+
+temp/uploads/
+
+/generated/prisma
+
+.env
+*.mp4
+*.mp3
+*.jpg
+*.png

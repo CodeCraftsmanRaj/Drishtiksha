@@ -1,0 +1,135 @@
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/assets/fonts/Poppins-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/assets/fonts/DMMono-Regular.ttf') format('truetype');
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: "Poppins", sans-serif;
+}
+
+:root {
+    --color-primary: #8155c6;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: theme('colors.light.secondary');
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.light.text' / 0.3);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: theme('colors.dark.secondary');
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.dark.text' / 0.3);
+}
+
+/* Smooth scroll behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Toast theme variables - Aligned with Tailwind config colors */
+:root {
+    /* Light mode */
+    --toast-bg: theme('colors.light.background'); /* Use Tailwind-defined light background */
+    --toast-text: theme('colors.light.text');     /* Use Tailwind-defined light text */
+    --toast-border: theme('colors.light.secondary'); /* Use Tailwind-defined light secondary border */
+    --toast-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.dark {
+    /* Dark mode */
+    --toast-bg: theme('colors.dark.muted.background'); /* Use Tailwind-defined dark muted background */
+    --toast-text: theme('colors.dark.text');           /* Use Tailwind-defined dark text */
+    --toast-border: theme('colors.dark.secondary');    /* Use Tailwind-defined dark secondary border */
+    --toast-shadow: 0 4px 12px rgba(0,0,0,0.5); /* Darker shadow for dark mode */
+}
+
+/* Custom toast animations */
+@keyframes toast-enter {
+    0% {
+        transform: translate3d(100%, 0, 0) scale(0.9);
+        opacity: 0;
+    }
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes toast-exit {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate3d(100%, 0, 0) scale(0.9);
+        opacity: 0;
+    }
+}
+
+/* Apply to react-hot-toast */
+/* Updated to use CSS variables for background, text, border, and shadow */
+[data-sonner-toast],
+[data-sonner-toast][data-styled] {
+    animation: toast-enter 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+    background-color: var(--toast-bg) !important;
+    color: var(--toast-text) !important;
+    border: 1px solid var(--toast-border) !important;
+    box-shadow: var(--toast-shadow) !important;
+}
+
+[data-sonner-toast][data-removed="true"] {
+    animation: toast-exit 0.35s cubic-bezier(0.06, 0.71, 0.55, 1) forwards;
+}
+
+/* Marquee animation (unrelated to toasts, but kept for completeness) */
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-marquee {
+    animation: marquee 20s linear infinite;
+    will-change: transform;
+}
+
+.marquee-inner {
+    display: inline-flex;
+    min-width: max-content;
+    white-space: nowrap;
+}

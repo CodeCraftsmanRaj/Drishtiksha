@@ -1,0 +1,28 @@
+# .dockerignore
+
+# Git files
+.git
+.gitignore
+
+# Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# IDE and editor configuration
+.vscode/
+.idea/
+
+# Local environment files
+.env*
+
+# Docker files
+Dockerfile
+.dockerignore
+
+*.mp4
+*.mp3

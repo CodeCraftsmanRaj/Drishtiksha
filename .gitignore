@@ -1,0 +1,8 @@
+.vscode/
+.env
+.env.docker
+database/
+*.zip
+*.whl
+system-instructions.md
+Server/todo.md

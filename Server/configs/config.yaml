@@ -1,0 +1,342 @@
+# configs/config.yaml
+
+# ===================================================================
+# Drishtiksha AI - Main Application Configuration (REFACTORED)
+# ===================================================================
+# This file defines the core settings for the inference server.
+# It is loaded and validated by `src/config.py` at startup.
+# -------------------------------------------------------------------
+
+project_name: "Drishtiksha: Deepfake Detection"
+
+# --- MODEL CONFIGURATIONS ---
+# Each key is a unique model identifier used in API calls and the .env file.
+# The `class_name` MUST now match the exact Python class name for auto-discovery.
+
+models:
+  SIGLIP-LSTM-V1:
+    # CHANGE: Must match the Python class name `SiglipLSTMV1`
+    class_name: "SiglipLSTMV1"
+    description: "SigLIP feature extractor with a bidirectional LSTM head for temporal analysis."
+    model_path: "models/SigLip-LSTM-v1.pth"
+    processor_path: "google/siglip-base-patch16-224"
+    num_frames: 120
+    isAudio: false
+    isImage: false
+    isVideo: true
+    model_definition:
+      base_model_path: "google/siglip-base-patch16-224"
+      lstm_hidden_size: 512
+      lstm_num_layers: 2
+      num_classes: 1
+
+  SIGLIP-LSTM-V3:
+    # CHANGE: Must match the Python class name `SiglipLSTMV3`
+    class_name: "SiglipLSTMV3"
+    description: "Enhanced SigLIP-LSTM detector with advanced visualization and metrics collection."
+    model_path: "models/SigLip-LSTM-v3.pth"
+    processor_path: "google/siglip-base-patch16-224"
+    num_frames: 120
+    rolling_window_size: 10
+    isAudio: false
+    isImage: false
+    isVideo: true
+    model_definition:
+      base_model_path: "google/siglip-base-patch16-224"
+      lstm_hidden_size: 512
+      lstm_num_layers: 2
+      num_classes: 1
+
+  SIGLIP-LSTM-V4:
+    # CHANGE: Must match the Python class name `SiglipLSTMV4`
+    class_name: "SiglipLSTMV4"
+    description: "V4 SigLIP-LSTM with deeper classifier heads and dropout for improved regularization."
+    model_path: "models/SigLip-LSTM-v4.pth"
+    processor_path: "google/siglip-base-patch16-224"
+    num_frames: 120
+    rolling_window_size: 10
+    isAudio: false
+    isVideo: true
+    isImage: false
+    model_definition:
+      base_model_path: "google/siglip-base-patch16-224"
+      lstm_hidden_size: 512
+      lstm_num_layers: 2
+      num_classes: 1
+      dropout_rate: 0.5
+
+  COLOR-CUES-LSTM-V1:
+    # CHANGE: Must match the Python class name `ColorCuesLSTMV1`
+    class_name: "ColorCuesLSTMV1"
+    description: "ColorCues LSTM detector using R-G color histogram analysis for deepfake detection."
+    model_path: "models/ColorCues-LSTM-v1.pth"
+    dlib_model_path: "models/Face-Landmarks.dat"
+    isAudio: false
+    isVideo: true
+    isImage: false
+    sequence_length: 32
+    frames_per_video: 50
+    histogram_bins: 32
+    landmark_margin: 20
+    rolling_window_size: 10
+    hidden_size: 64
+    dropout: 0.5
+
+  EFFICIENTNET-B7-V1:
+    # CHANGE: Must match the Python class name `EfficientNetB7Detector`
+    class_name: "EfficientNetB7Detector"
+    description: "Frame-by-frame face detector using MTCNN and EFFICIENTNET-B7 classifier."
+    model_path: "models/EfficientNet-B7-v1"
+    encoder: "tf_efficientnet_b7.ns_jft_in1k"
+    input_size: 380
+    isAudio: false
+    isImage: false
+    isVideo: true
+
+  EYEBLINK-CNN-LSTM-V1:
+    # CHANGE: Must match the Python class name `EyeblinkDetectorV1`
+    class_name: "EyeblinkDetectorV1"
+    description: "Detects deepfakes by analyzing sequences of eye blinks using a CNN LSTM architecture."
+    model_path: "models/EyeBlink-CNN-LSTM-v1.pth"
+    dlib_model_path: "models/Face-Landmarks.dat"
+    sequence_length: 10
+    blink_threshold: 0.45
+    consecutive_frames: 2
+    # REMOVED: `isDetailed` is no longer needed.
+    isAudio: false
+    isImage: false
+    isVideo: true
+    model_definition:
+      base_model_name: "legacy_xception"
+      lstm_hidden_size: 128
+      dropout_rate: 0.3
+      img_size: [160, 160]
+
+  SCATTERING-WAVE-V1:
+    # CHANGE: Must match the Python class name `ScatteringWaveV1`
+    class_name: "ScatteringWaveV1"
+    description: "Audio deepfake detector using a Wavelet Scattering Transform on Mel Spectrograms."
+    model_path: "models/Scattering-Wave-v1.pth"
+    # REMOVED: `isDetailed` is no longer needed.
+    isAudio: true
+    isImage: false
+    isVideo: false
+    sampling_rate: 16000
+    duration_seconds: 2.0
+    image_size: [256, 256]
+
+  MEL-SPECTROGRAM-CNN-V2:
+    class_name: "MelSpectrogramCNNV2"
+    description: "Audio deepfake detector using a Wavelet Scattering Transform on Mel Spectrograms."
+    model_path: "models/MEL-Spectrogram-CNN-v2.pth"
+    isAudio: true
+    isImage: false
+    isVideo: false
+    # --- Method-specific parameters ---
+    sampling_rate: 16000
+    n_fft: 2048
+    hop_length: 512
+    n_mels: 256
+    dpi: 100
+    chunk_duration_s: 1.0
+
+  STFT-SPECTROGRAM-CNN-V2:
+    class_name: "STFTSpectrogramCNNV1"
+    description: "Audio deepfake detector using stacked wideband and narrowband STFT spectrograms."
+    model_path: "models/STFT-Spectrogram-CNN-v2.pth"
+    isAudio: true
+    isImage: false
+    isVideo: false
+    # --- Method-specific parameters ---
+    sampling_rate: 16000
+    n_fft_wide: 512
+    n_fft_narrow: 2048
+    hop_length: 160
+    img_height: 512
+    img_width: 256
+    dpi: 100
+    chunk_duration_s: 1.0
+
+  MEL-SPECTROGRAM-CNN-V3:
+    class_name: "MelSpectrogramCNNV3"
+    description: "Audio deepfake detector using **overlapping Mel Spectrogram chunks** and a Scattering CNN for improved temporal continuity."
+    model_path: "models/MEL-Spectrogram-CNN-v3.pth"
+    isAudio: true
+    isImage: false
+    isVideo: false
+    # --- Method-specific parameters ---
+    sampling_rate: 16000
+    n_fft: 2048
+    hop_length: 512
+    n_mels: 256
+    dpi: 100
+    chunk_duration_s: 1.0
+    chunk_overlap_s: 0.5 # <--- NEW PARAMETER
+
+  STFT-SPECTROGRAM-CNN-V3:
+    class_name: "STFTSpectrogramCNNV1"
+    description: "Audio deepfake detector using stacked wideband and narrowband STFT spectrograms."
+    model_path: "models/STFT-Spectrogram-CNN-v3.pth"
+    isAudio: true
+    isImage: false
+    isVideo: false
+    # --- Method-specific parameters ---
+    sampling_rate: 16000
+    n_fft_wide: 512
+    n_fft_narrow: 4096
+    hop_length: 160
+    img_height: 512
+    img_width: 256
+    dpi: 100
+    chunk_duration_s: 1.0
+
+  DISTIL-DIRE-V1:
+    class_name: "DistilDIREDetectorV1"
+    description: "Image deepfake detector using Diffusion Reconstruction Error (DIRE) and a ResNet backbone."
+    # The main detector model checkpoint
+    model_path: "models/DistilDIRE-v1.pth"
+    # The required ADM diffusion model for noise generation
+    adm_model_path: "models/ADM-256x256-DistilDIRE.pt"
+    isImage: true
+    isAudio: false
+    isVideo: false
+    image_size: 256
+    # Configuration for the ADM model, as seen in the original repository
+    adm_config:
+      attention_resolutions: "32,16,8"
+      class_cond: False
+      diffusion_steps: 1000
+      image_size: 256
+      learn_sigma: True
+      noise_schedule: "linear"
+      num_channels: 256
+      num_head_channels: 64
+      num_res_blocks: 2
+      resblock_updown: True
+      use_fp16: True
+      use_scale_shift_norm: True
+      timestep_respacing: "ddim20"
+      clip_denoised: True
+      use_ddim: True
+      num_samples: 1
+      real_step: 0
+
+  MFF-MOE-V1:
+    class_name: "MFFMoEDetectorV1"
+    description: "Mixture-of-Experts (MoE) model combining multiple backbones for robust image and video analysis."
+    model_path: "models/MFF-MoE-V1/"
+    isImage: true
+    isVideo: true
+    isAudio: false
+    video_frames_to_sample: 100
+
+  CROSS-EFFICIENT-VIT-GAN:
+    class_name: "CrossEfficientViTDetector"
+    description: "Hybrid EfficientNet-ViT model optimized for detecting GAN-based video deepfakes."
+    model_path: "models/Cross-EfficientNet-ViT/Cross-EfficientNet-ViT-GAN-V1.pth"
+    isImage: false
+    isVideo: true
+    isAudio: false
+    model_definition:
+      image-size: 224
+      num-classes: 1
+      depth: 4
+      sm-dim: 192
+      sm-patch-size: 7
+      sm-enc-depth: 2
+      sm-enc-dim-head: 64
+      sm-enc-heads: 8
+      sm-enc-mlp-dim: 2048
+      lg-dim: 384
+      lg-patch-size: 56
+      lg-enc-depth: 3
+      lg-enc-dim-head: 64
+      lg-enc-heads: 8
+      lg-enc-mlp-dim: 2048
+      cross-attn-depth: 2
+      cross-attn-dim-head: 64
+      cross-attn-heads: 8
+      lg-channels: 24
+      sm-channels: 1280
+      dropout: 0.15
+      emb-dropout: 0.15
+
+  CROSS-EFFICIENT-VIT-IMG:
+    class_name: "CrossEfficientViTDetector"
+    description: "Hybrid EfficientNet-ViT model optimized for detecting diffusion-based image deepfakes."
+    model_path: "models/Cross-EfficientNet-ViT/Cross-EfficientNet-ViT-IMG-V1.pth"
+    isImage: true
+    isVideo: false
+    isAudio: false
+    isMultiModal: false
+    model_definition:
+      image-size: 224
+      num-classes: 1
+      depth: 4
+      sm-dim: 192
+      sm-patch-size: 7
+      sm-enc-depth: 2
+      sm-enc-dim-head: 64
+      sm-enc-heads: 8
+      sm-enc-mlp-dim: 2048
+      lg-dim: 384
+      lg-patch-size: 56
+      lg-enc-depth: 3
+      lg-enc-dim-head: 64
+      lg-enc-heads: 8
+      lg-enc-mlp-dim: 2048
+      cross-attn-depth: 2
+      cross-attn-dim-head: 64
+      cross-attn-heads: 8
+      lg-channels: 24
+      sm-channels: 1280
+      dropout: 0.15
+      emb-dropout: 0.15
+
+  LIP-FD-V1:
+    class_name: "LipFDetectorV1"
+    description: "Audio-Visual model detecting temporal inconsistencies in lip-sync deepfakes."
+    model_path: "models/LipFD-v1.pth"
+    isImage: false
+    isVideo: true
+    isAudio: true
+    isMultiModal: true
+    model_definition:
+      arch: "CLIP:ViT-L/14"
+      n_extract: 200
+      window_len: 5
+
+  AUDIO-MFT-CRNN-V1:
+    class_name: "AudioMFTCRNNV1" # Must match the detector class name
+    description: "Audio Multi-Feature Temporal CRNN for detecting audio deepfakes."
+    model_path: "models/Audio-MFT-CRNN-v1.pth"
+    isAudio: true
+    isVideo: false
+    isImage: false
+
+    # --- Parameters ported directly from the source project ---
+    preprocessing_params:
+      sampling_rate: 16000
+      chunk_duration_s: 1.0
+      chunk_overlap_s: 0.5
+
+    feature_extraction:
+      mfcc:
+        enabled: true
+        n_mfcc: 20
+        include_deltas: true
+      chroma_features:
+        enabled: true
+        n_chroma: 12
+      spectral_contrast:
+        enabled: true
+        n_bands: 6
+      zero_crossing_rate:
+        enabled: true
+
+    combined_vector_model:
+      shared_hop_length: 512
+      mel_n_fft: 2048
+      n_mels: 256
+      stft_n_fft_wide: 512
+      stft_n_fft_narrow: 2048
